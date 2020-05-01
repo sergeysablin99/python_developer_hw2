@@ -1,0 +1,6 @@
+ERROR    [2020-05-01 08:35:13,982]  1111111111 must be string
+ERROR    [2020-05-01 08:37:16,241]  2000-12-12 must be an alpha
+ERROR    [2020-05-01 08:37:52,091]  2000-12-12 must be an alpha
+ERROR    [2020-05-01 09:12:27,090]  Bad parameter named "document_type" for Patient
+ERROR    [2020-05-01 09:13:16,500]  Bad parameter named "document_type" for Patient
+ERROR    [2020-05-01 09:14:22,862]  Bad parameter named "document_type" for Patient

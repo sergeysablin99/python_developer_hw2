@@ -1,0 +1,15 @@
+INFO     [2020-05-01 08:52:48,396]  Created new Patient Pleg Ivanov
+INFO     [2020-05-01 08:52:48,397]  Patient Pleg Ivanov has been successfully saved
+INFO     [2020-05-01 08:52:48,424]  Created new Patient Oleg Sergeev
+INFO     [2020-05-01 08:53:01,986]  Created new Patient Pleg Ivanov
+INFO     [2020-05-01 08:53:01,986]  Patient Pleg Ivanov has been successfully saved
+INFO     [2020-05-01 08:53:01,996]  Created new Patient Oleg Sergeev
+INFO     [2020-05-01 08:53:01,996]  Patient Oleg Sergeev has been successfully saved
+INFO     [2020-05-01 09:16:23,279]  Created new Patient Pleg Ivanov
+INFO     [2020-05-01 09:16:23,295]  Created new Patient Oleg Sergeev
+INFO     [2020-05-01 09:37:07,992]  Created new Patient Pleg Ivanov
+INFO     [2020-05-01 09:37:08,005]  Created new Patient Oleg Sergeev
+INFO     [2020-05-01 09:38:08,594]  Created new Patient Pleg Ivanov
+INFO     [2020-05-01 09:38:08,595]  Created new Patient Oleg Sergeev
+INFO     [2020-05-01 09:47:06,480]  Created new Patient Pleg Ivanov
+INFO     [2020-05-01 09:47:06,515]  Created new Patient Oleg Sergeev
