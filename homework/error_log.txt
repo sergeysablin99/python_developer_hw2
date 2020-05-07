@@ -4,3 +4,14 @@ ERROR    [2020-05-01 08:37:52,091]  2000-12-12 must be an alpha
 ERROR    [2020-05-01 09:12:27,090]  Bad parameter named "document_type" for Patient
 ERROR    [2020-05-01 09:13:16,500]  Bad parameter named "document_type" for Patient
 ERROR    [2020-05-01 09:14:22,862]  Bad parameter named "document_type" for Patient
+ERROR    [2020-05-07 19:58:20,107]  Type of parameter must be a string!
+ERROR    [2020-05-07 19:59:40,150]  Type of parameter must be a string!
+ERROR    [2020-05-07 20:00:57,324]  Type of parameter must be a string!
+ERROR    [2020-05-07 20:59:49,079]  Type of parameter must be a string!
+ERROR    [2020-05-07 21:02:02,485]  Type of parameter must be a string!
+ERROR    [2020-05-07 21:03:52,156]  Bad type for Patient
+ERROR    [2020-05-07 21:07:32,858]  Bad type for Patient
+ERROR    [2020-05-07 21:07:42,562]  Bad type for Patient
+ERROR    [2020-05-07 21:08:47,915]  Bad type for Patient
+ERROR    [2020-05-07 21:24:18,747]  Bad value for Patient
+ERROR    [2020-05-07 22:05:13,038]  Bad value for Patient

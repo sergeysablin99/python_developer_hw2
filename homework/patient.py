@@ -1,31 +1,67 @@
 from homework.logger import error_logger, info_logger
-import homework.csv_recorder as csv_recorder
-from homework.csv_reader import CsvReader
+
+from sqlalchemy import Column, Integer, String, create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+
+import click
+
+engine = create_engine('sqlite:///:memory:', echo=False)
+Session = sessionmaker(bind=engine)
+
+session = Session()
+
+Base = declarative_base()
 
 
-class Patient(object):
+def logging_decorator(func):
+    def wrapper(self, *args):
+        if func.__name__ == '__init__':
+            first_name, last_name, birth_date, \
+            phone, document_type, document_id = args
+            try:
+                result = func(self, first_name, last_name, birth_date,
+                              phone, document_type, document_id)
+                info_logger.info("Created new Patient {} {}".format(str(first_name), str(last_name)))
+            except ValueError:
+                error_logger.error('Bad value for Patient')
+                raise ValueError
+            except TypeError:
+                error_logger.error('Bad type for Patient')
+                raise TypeError
+            return result
+        elif func.__name__ == 'save':
+            func(self)
+            info_logger.info(
+                "Patient {} {} has been successfully saved".format(self._first_name, self._last_name))
+
+    return wrapper
+
+
+class Patient(Base):
+    __tablename__ = 'patients'
+    id = Column(Integer, primary_key=True)
+    first_name = Column(String)
+    last_name = Column(String)
+    birth_date = Column(String)
+    phone = Column(String)
+    document_type = Column(String)
+    document_id = Column(String)
+
+    @logging_decorator
     def __init__(self, first_name, last_name, birth_date,
                  phone, document_type, document_id):
         for string in (first_name, last_name, birth_date, phone, document_id, document_type):
             if not isinstance(string, str):
-                error_logger.error(f'{string} must be string')
                 raise TypeError
         for word in (first_name, last_name):
             if not word.isalpha():
-                error_logger.error(f'{word} must be an alpha')
                 raise ValueError
 
-        if not self.__check_birth_date(str(birth_date)):
-            error_logger.error('Bad parameter named "birth_date" for Patient')
-            raise ValueError
-        if not self.__check_phone(str(phone)):
-            error_logger.error('Bad parameter named "phone" for Patient')
-            raise ValueError
-        if not self.__check_doc_type(str(document_type)):
-            error_logger.error('Bad parameter named "document_type" for Patient')
-            raise ValueError
-        if not self.__check_doc_id(str(document_id)):
-            error_logger.error('Bad parameter named "document_id" for Patient')
+        if not self.__check_birth_date(str(birth_date)) or \
+                not self.__check_phone(str(phone)) or \
+                not self.__check_doc_type(str(document_type)) or \
+                not self.__check_doc_id(str(document_id)):
             raise ValueError
 
         self._first_name = str(first_name)
@@ -88,9 +124,10 @@ class Patient(object):
             return False
         return True
 
+    @logging_decorator
     def save(self):
         info_logger.info("Patient {} {} has been successfully saved".format(self._first_name, self._last_name))
-        Patient_recorder.record(self)
+        session.add(self)
 
     @property
     def first_name(self):
@@ -126,7 +163,7 @@ class Patient(object):
             raise ValueError('Bad parameter {}'.format(str(value)))
 
         success_msg = "Patient {} field named 'birth_date' changed from {} to {} ".format(
-                             self._first_name + ' ' + self._last_name, self._birth_date, str(value))
+            self._first_name + ' ' + self._last_name, self._birth_date, str(value))
         info_logger.info(success_msg)
         self._birth_date = str(str(value))
 
@@ -186,40 +223,68 @@ class Patient(object):
         info_logger.info(success_msg)
         self._doc_id = str(value)
 
+    def __repr__(self):
+        return "<Patient('%s','%s', '%s', '%s','%s', '%s')>" \
+               % (self.first_name, self.last_name, self.birth_date,
+                  self.phone, self.document_type, self.document_id)
 
-Patient_recorder = csv_recorder.CsvRecorder(Patient, "output.csv")
+
+Base.metadata.create_all(engine)
 
 
 class PatientCollection(object):
-    def __init__(self, path_to_file):
-        self.reader = CsvReader(Patient, path_to_file)
-
     def limit(self, n):
-        counter = 0
-        while counter < n:
-            if self.reader._last_modification_time() > self.reader.last_modified:
-                self.reader._parse_file()
-            if counter < len(self.reader._patients):
-                yield self.reader._patients[counter]
-            else:
-                break
-            counter += 1
+        for patient in session.query(Patient)[:n]:
+            yield patient
 
     def __iter__(self):
-        counter = 0
-        while True:
-            if counter >= len(self.reader._patients):
-                raise StopIteration
-            if self.reader._last_modification_time() > self.reader.last_modified:
-                self.reader._parse_file()
-            if counter < len(self.reader._patients):
-                yield self.reader._patients[counter]
-            else:
-                yield
-            counter += 1
+        for patient in session.query(Patient).all():
+            yield patient
+        raise StopIteration
 
-#
-# p = Patient('Oleg', 'Ivanov', '2000-10-10', '79160000000', 'паспорт', '1111111111')
-# p.save()
-# p = Patient('Oleg1', 'Ivanov1', '2000-10-10', '79160000001', 'паспорт', '2222222222')
-# p.save()
+    @staticmethod
+    def size():
+        return session.query(Patient).count()
+
+
+@click.group()
+def cli():
+    pass
+
+
+@click.command()
+@click.argument('first_name')
+@click.argument('last_name')
+@click.option('--birth_date', default='1900-1-1')
+@click.option('--phone', default='9161111111')
+@click.option('--document_type', default='паспорт')
+@click.option('--document_number', default='1111 111111')
+def create(first_name, last_name, birth_date,
+           phone, document_type, document_number):
+    p = Patient(first_name, last_name, birth_date,
+                phone, document_type, document_number)
+    p.save()
+
+
+@click.command()
+@click.argument('COUNT', default='10')
+def show(c):
+    p = PatientCollection()
+    for i in p.limit(c):
+        click.echo(i)
+
+
+@click.command()
+def count():
+    click.echo(PatientCollection.size())
+
+
+cli.add_command(show)
+cli.add_command(count)
+cli.add_command(create)
+if __name__ == '__main__':
+    p = Patient('o', 'l', '2000-11-11', '9160000000', 'паспорт', '1111111111')
+    p.save()
+    s = Patient('oo', 'll', '2000-12-11', '9120000000', 'паспорт', '1211111111')
+    s.save()
+    cli()
